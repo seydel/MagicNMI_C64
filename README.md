@@ -1,7 +1,7 @@
 # MagicNMI_C64
 
 
-"Retrocomputing": Some fun with the Non Maskable Interrupt on the C64
+## "Retrocomputing": Some fun with the Non Maskable Interrupt on the C64
 
 
 The C64 BASIC program "MAGICNMI.PG" "pokes" machine code that redirects the non-maskable interrupt (NMI).
