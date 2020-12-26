@@ -1,7 +1,7 @@
 # MagicNMI_C64
 
 
-"Retrocomputing": Some fun with the Non Maskable Interrupt on the C64
+**"Retrocomputing": Some fun with the Non Maskable Interrupt on the C64 **
 
 
 The C64 BASIC program "MAGICNMI.PG" "pokes" machine code that redirects the non-maskable interrupt (NMI).
@@ -31,6 +31,7 @@ Line 27 contains the loop to correct the absolute address. Line 28 redirects the
 
 The commented assembler code corresponding to the machine code contained in the "DATA" lines in the BASIC code is given in the file "machine_code_magic_nmi.txt".
 
+
 **Disclaimer**
 
-In the absence of hardware, the *github* version of this code has not yet been tested.
+Suitable hardware being unvailable, and cloning a *github* repository to an original C64 still posing a challenge, this version of the code has not yet been tested.
