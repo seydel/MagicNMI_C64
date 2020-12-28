@@ -1,0 +1,170 @@
+                            ; Magic NMI (Non-Maskable Interrupt):
+                            ; redirect the C64 non-maskable interrupt (NMI) to a user-defined subroutine,
+                            ; invoke the user-defined interrupt by pressing 'run/stop'+'C=',
+                            ; while just pressing 'run/stop'+'restore' calls the built-in NMI handling routine,
+                            ; demonstrate the method by loading the C1541 floppy disk directory.
+                            ; Return to the original program subsequent to completing the user-defined interrupt routine. 
+                            ; November 1988 by Tilo Seydel
+.,C000 43       PHA         ; save to stack: push accumulator to stack
+.,C001 8A       TXA         ; transfer X to accumulator
+.,C002 48       PHA         ; push A to stack
+.,C003 98       TYA         ; load Y to A
+.,C004 48       PHA         ; push A to stack
+.,C005 A9 7F    LDA #$7F    ; load into accumulator
+.,C007 8D 00 DC STA $DC00   ; store accumulator in register for keyboard matrix columns
+.,C00A AD 01 DC LDA $DC01   ; keyboard matrix rows
+.,C00D 29 20    AND #$20    ; true if C= key is pressed 
+.,C00F F0 03    BEQ $C014   ; branch if equal
+.,C011 4C 4C FE JMP $FE4C   ; jump to C64 ROM routine handling NMI interrupt 
+.,C014 AD 1F C0 LDA $C01F
+.,C017 F0 0A    BEQ $C023   ; branch on equal, i.e. value of $C01F has not been decreased
+.,C019 68       PLA         ; retrieve from stack: pull accumulator
+.,C01A A8       TAY         ; transfer accumulator to Y
+.,C01B 68       PLA         ; pull accumulator
+.,C01C AA       TAX         ; transfer accumulator to X
+.,CG1D 68       PLA         ; pull accumulator
+.,C01E 40       RTI         ; return from interrupt
+.,C01F 00       BRK         ; register to record repeated calls (cf. line 14)
+.,C020 24 54    BIT $54     ; not used     
+.,C022 53       ???         ; not used
+.,C023 CE 1F C0 DEC $C01F   ; decrease contents of $C01F by one - jump here from $C017
+.,C026 A0 00    LDY #$00    ; load Y
+.,C028 BA       TSX         ; transfer stack pointer to X
+.,C029 BD 00 01 LDA $0100,X ; copy processor stack to memory at end of routine
+.,C02C 99 48 C1 STA $C148,Y
+.,C02F C8       INY         ; increase Y
+.,C030 E8       INX         ; increase X
+.,C031 D0 F6    BNE $C029   ; branch if not equal
+.,C033 BA       TSX         ; transfer stack pointer to X
+.,C$34 A9 41    LDA #$41    ; REDIRECT: point counter of the interrupted program to the new routine 
+.,C036 9D 05 01 STA $0105,X ; store accumulator
+.,C039 AB C0    LDA #$C0
+.,C03B 9D 06 01 STA $0106,X ; i.e. the program will continue at $C041
+.,C03E 18       CLC         ; clear carry
+.,C03F 90 D8    BCC $C019   ; branch if carry is clear to $C019, i.e. return from interrupt with new
+                            ; program counter 
+.,C041 A9 01    LDA #$01    ; new program starts here: directory routine as demonstration 
+.,C343 A2 08    LDX #$08    
+.,C045 A0 00    LDY #$00
+.,C047 23 EA FF JSR $FFBA   ; 'setlfs' floppy disk drive command
+.,C04A A9 31    LDA #$01
+.,C04C A2 26    LDX #$20
+.,C04E A8 CG    LDY #$C0
+.,C050 29 ED FF JSR $FFBD   ; 'setnam' floppy disk drive command
+.,C053 20 C0 FF JSR $FFC0   ; 'open'   floppy disk drive command
+.,C056 36 41    BCS $C099   ; branch on error
+.,C058 A2 01    LDX #$01
+.,C05A 20 C6 FF JSR $FFC6   ; 'chkin': channel for input
+.,C05D 20 CF FF JSR $FFCF   ; 'chrin': character input (ignore load address)
+.,C060 20 CF FF JSR $FFCF   ;
+.,C063 20 CC FF JSR $FFCC   ; 'clrchn'
+..C066 A2 01    LDX #$01
+.,C068 20 C6 FF JSR $FFC6   ; 'chkin': channel for input again
+.,C06B 20 CF FF JSR $FFCF   ; open; start of loop
+                            ; ignore line address
+.,C06E 20 CF FF JSR $FFCF
+.,C071 20 B7 FF JSR $FFB7   ; 'readst' (disk status)
+.,C074 D0 1B    BNE $C091   ; branch on end of file
+.,C076 20 CF FF JSR $FFCF   ; read and ignore number of blocks low byte
+.,C079 20 CF FF JSR $FFCF   ; read and ignore number of blocks high byte
+.,C37C 20 CF FF JSR $FFCF   ; read number of characters
+.,C07F C9 00    CMP #$00    ; end of line?
+.,C081 F0 06    BEQ $C089   ; branch if yes
+.,C083 20 D2 FF JSR $FFD2   ; 'chrout': output character
+.,C086 18       CLC
+.,C087 90 F3    BCC $C07C   ; jump back in loop over line
+.,C089 A9 0D    LDA #$0D    ; at end of line: 'return' character
+.,C08B 23 D2 FF JSR $FFD2   ; 
+.,C08E 13       CLC
+.,C08F 90 D5    BCC $C066   ; jump back in loop over file 
+.,C091 20 CC FF JSR $FFCC   ; 'clrchn'
+.,C094 A9 01    LDA #$01    
+.,C096 20 C3 FF JSR $FFC3   ; 'close'
+.,C099 A0 00    LDY #$00    ; prepare for input    
+.,C09B C0 10    CPY #$10    ; begin input loop
+.,C09D F0 0E    BEQ $C0AD   ; branch on 'return'      
+..C09F 20 CF FF JSR $FFCF   ; 'chrin' input from keyboard
+.,C0A2 C9 0D    CMP #$0D    ;    
+.,C0A4 F0 07    BEQ $C0AD   ; branch on 'return'
+.,C0A6 99 38 C1 STA $C138,Y ; store character
+.,C0A9 C8       INY
+.,C0AA 18       CLC
+.,C0AB 90 EE    BCC $C09B   ; jump
+.,C0AD C0 01    CPY #$01    ; no file name given?
+.,C0AF F0 60    BEQ $C111   ; branch if no filename given
+.,C0B1 C8       INY
+.,C0B2 C8       INY
+.,C0B3 98       TYA         ; y-register contains length of file name
+.,C0B6 A2 36    LDX #$36
+.,C0B8 A0 C1    LDY #$C1    ; $C136: address of file name
+.,C0BB 20 BD FF JSR $FFBD   ; 'setnam'
+.,C0BD A9 02    LDA #$02
+.,C0BF A2 08    LDX #$08
+.,CQBF 20 00    LDY #$00
+.,C0C1 20 BA FF JSR $FFBA   ; 'setlfs'
+.,C0C4 20 CC FF JSR $FFC0   ; 'open'
+.,C0C7 B0 14    BCS $C0DD   ; branch on error
+.,C0C9 A2 02    LDX #$02
+.,C0CB 23 C6 FF JSR $FFC6   ; 'chkin': channel for input
+.,C0CE 20 CF FF JSR $FFCF   ; load address low byte
+.,C0D1 A8       TAY
+.,C0D2 20 CF FF JSR $FFCF   ; load address high byte
+.,C0D5 AA       TAX
+.,C0D6 A9 20    LDA #$20    ; 'space'
+.,C0D8 20 D2 FF JSR $FFD2   ; 'chrout'   
+.,C0DB A9 24    LDA #$24    ; '$'
+.,C0DD 20 D2 FF JSR $FFD2   ; 'chrout'
+.,C0E0 8A       TXA         ;  prepare output in hexadecimal format
+.,C0E1 4A       LSR
+.,C$E2 4A       LSR
+.,CQE3 4A       LSR
+.,CBE4 4A       LSR
+.,C0E5 EA       NOP         ; highest digit of hex number ...
+.,C0E6 18       CLC         ; .. in the accumulator
+.,C0E7 20 2A C1 JSR $C12A   ; subroutine to output the number
+.,C0EA 8A       TXA
+.,C0EB 29 0F    AND #$0F
+.,C0ED 18       CLC         ; second digit in the accumulator
+.,C0EE 20 2A C1 JSR $C12A   ; jump to the subroutine
+.,C0F1 98       TYA
+.,C0F2 4A       LSR
+.,C0F3 4A       LSR
+.,C0F4 4A       LSR
+.,C0F5 AA       LSR
+.,C0F6 EA       NOP
+.,C0F7 18       CLC         ; third digit in the accumulator
+.,C0F8 2A 2A C1 JSR $C12A   ; jump to the subroutine
+.,C0FB 98       TYA
+.,C0FC 29 0F    AND #$0F
+.,CDFE 18       CLC         ; fourth digit in the accumulator
+.,CDFF ED 2A C1 JSR $C12A   ; jump to the subroutine
+.,C102 EA       NOP
+.,C103 EA       NOP
+.,C104 A9 02    LDA #$02
+.,C106 23 C3 FF JSR $FFC3   ; 'close'
+.,C109 A9 0D    LDA #$0D    ; 'return'
+.,C10B ED D2 FF JSR $FFD2   ; outout 'return' 
+.,C10E ED E7 FF JSR $FFE7   ; 'clall'
+.,C111 EE 1F C0 INC $C01F   ; controll reiguster to zero
+.,C114 A0 05    LDY #$05    ; get back stack register
+.,C116 B9 49 C1 LDA $C149,Y ;      ( loop for program counter,
+.,C119 48       PHA         ;         status register )
+.,C11A 88       DEY
+.,C11B C0 02    CPY #$02
+.,C11D D0 F7    BNE $C116
+.,C11F B9 49 C1 LDA $C149,Y ; get back accumulator, ...
+.,C122 88       DEY
+.,C123 BE 49 C1 LDX $C149,Y ; x-register, ...
+.,C126 AC 49 C1 LDY $C149   ; and y-register 
+.,C129 40       RTI         ; return from interrupt
+.,C12A 69 30    ADC #$30    ; subroutine for output of hex numbers
+.,C12c C9 3A    CMP #$3A    ; ( conversion to ASCII code )
+.,C12E 30 02    BMI $C132
+.,C130 69 06    ADC #$06
+.,C132 20 D2 FF JSR $FFD2   ; 'chrout'
+.,C135 60       RTS         ; return
+.,C136 4F       ???         ; ASCII 'O'
+.,C137 3A       ???         ; ASCII ':'
+.,C138 C3       ???         ; space for filename up to $C147
+                            ; subsequently space for processor stack
+
