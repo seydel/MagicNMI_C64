@@ -4,17 +4,17 @@
 ## "Retrocomputing": Some fun with the Non Maskable Interrupt on the C64
 
 
-The C64 BASIC program "MAGICNMI.PG" "pokes" machine code that redirects the non-maskable interrupt (NMI).
+The C64 BASIC program 'MAGICNMI.PRG' "pokes" machine code that redirects the non-maskable interrupt (NMI).
 
-The modified NMI can be used to interrupt nearly any program and return to it subsequent to carrying out the NMI routine.
+The concept of the modified NMI can in principle be used to interrupt nearly any program and return to it subsequent to carrying out the NMI routine.
 
-The modified NMI is demonstrated by listing the floppy disk directory.
+Here, the modified NMI is demonstrated by listing the floppy disk directory as "proof of principle".
 
 Subsequent to invoking the modified NMI by pressing the keys "C="+"RESTORE" and doing the demonstration, the routine returns to the orignal program. 
 
 The standard NMI invoked by pressing "RUN/STOP"+"RESTORE" remains unaffected.
 
-The C64 BASIC listing "MAGICNMI.PRG" writes the machine code to the address provided by the user.
+The BASIC program 'MAGICNMI.PRG' writes the machine code to the address provided by the user.
 This address has to be an integer multiple of 256. In the event that a wrong address is specified, 
 the program automatically determines the nearest lower correct address.
 
@@ -29,7 +29,7 @@ is contained in lines 25 to 27.
 Line 27 contains the loop to correct the absolute address. Line 28 redirects the NMI handling routine.
 
 
-The commented assembler code corresponding to the machine code contained in the "DATA" lines in the BASIC code is given in the file "machine_code_magic_nmi.txt".
+The commented assembler code corresponding to the machine code contained in the "DATA" lines in the BASIC code is given in the file 'machine_code_magic_nmi.txt'.
 
 
 **Disclaimer**
