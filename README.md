@@ -34,4 +34,4 @@ The commented assembler code corresponding to the machine code contained in the 
 
 **Disclaimer**
 
-Suitable hardware being unvailable, and cloning a *github* repository to an original C64 still posing a challenge, this version of the code has not yet been tested.
+This repository concerns 'ancient' computer technology of the nineteen-eighties. Suitable hardware being unvailable, and cloning a *github* repository to an original C64 posing a challenge, this version of the code has not yet been tested.
